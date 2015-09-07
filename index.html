@@ -1,0 +1,101 @@
+<html>
+	
+	<head>
+
+		<style>
+		*, *:before, *:after {-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;}
+		body,html{padding:0; margin:0;}
+    #main{min-width: 100%; width: 100%; max-width: 100%; min-height: 100%; height: 100%; max-height: 100%; position: absolute;}
+    #main td{vertical-align: middle; text-align: center; min-width: 50%; width: 50%; max-width: 50%; color:#FED700;font-size: 3em;}
+
+    #meterParent{background: rgba(20,51,110, 0.8); }
+		#weather{position: absolute;bottom:15px; right:15px; color:white;}
+
+		#explain{position: absolute;bottom:15px; left:15px; color:white;}
+
+		</style>
+    
+		<script src="underscore.js"></script>
+		<script src="jquery.js"></script>
+		<script src="p5.js"></script>
+		<script src="p5.dom.js"></script>
+    <script src="p5.sound.js"></script>
+
+	</head>
+
+
+	<body>
+    <table id="main">
+      <tr>
+        <td id="imgHolder"><img src="relEnergy.png" alt=""></td>
+        <td id="meterParent">
+          <span>Total Energy:  </span><span id="meter"></span>
+        </td>
+      </tr>
+    </table>
+    
+
+
+		<script>
+var myApp = {}
+myApp.stoper = 0;
+myApp.totalEnergy = 0;
+
+var mic, fft;
+
+
+
+myApp.screenWidth = $(window).width();
+myApp.screenHeight = $(window).height();
+
+
+function setup() {
+   createCanvas(myApp.screenWidth,myApp.screenHeight);
+   noFill();
+
+    $("#meter").html(myApp.totalEnergy)
+
+   mic = new p5.AudioIn();
+   mic.start();
+   fft = new p5.FFT();
+   fft.setInput(mic);
+}
+
+function draw() {
+   background(200);
+
+   var spectrum = fft.analyze();
+
+  var lowEngergyRange = _.range(0,123)
+  spectrumHighEnergy = _.difference(spectrum, lowEngergyRange);
+  var numOfFreq = spectrumHighEnergy.length
+
+/*if (myApp.stoper < 100){
+  console.log(numOfFreq)  
+  myApp.stoper = myApp.stoper+1
+}*/
+
+  if (numOfFreq > 150){
+    myApp.totalEnergy = myApp.totalEnergy + numOfFreq
+    $("#meter").html(myApp.totalEnergy)
+  }
+
+
+  c = color("yellow");
+  fill(c)
+//  stroke(c)
+
+  spectrum.unshift(0)
+  spectrum.push(0)
+
+   beginShape();
+   for (i = 0; i<spectrum.length; i++) {
+    vertex(i, map(spectrum[i], 0, 255, height, 0) );
+   }
+   endShape();
+}
+		</script>
+
+	</body>
+
+</html>
